@@ -1,0 +1,147 @@
+import { sql } from "drizzle-orm";
+import { pgTable, text, varchar, integer, real, timestamp, jsonb } from "drizzle-orm/pg-core";
+import { createInsertSchema } from "drizzle-zod";
+import { z } from "zod";
+
+export const users = pgTable("users", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  username: text("username").notNull().unique(),
+  password: text("password").notNull(),
+});
+
+export const salesData = pgTable("sales_data", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  itemName: text("item_name").notNull(),
+  category: text("category").notNull(),
+  quantity: integer("quantity").notNull(),
+  date: timestamp("date").notNull(),
+  revenue: real("revenue").notNull(),
+  createdAt: timestamp("created_at").default(sql`now()`),
+});
+
+export const predictions = pgTable("predictions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  itemName: text("item_name").notNull(),
+  category: text("category").notNull(),
+  predictedQuantity: integer("predicted_quantity").notNull(),
+  confidence: real("confidence").notNull(),
+  predictionDate: timestamp("prediction_date").notNull(),
+  forecastPeriod: text("forecast_period").notNull(), // 'daily', 'weekly', 'monthly'
+  createdAt: timestamp("created_at").default(sql`now()`),
+});
+
+export const inventory = pgTable("inventory", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  itemName: text("item_name").notNull(),
+  category: text("category").notNull(),
+  currentStock: integer("current_stock").notNull(),
+  minimumStock: integer("minimum_stock").notNull(),
+  maxStock: integer("max_stock").notNull(),
+  updatedAt: timestamp("updated_at").default(sql`now()`),
+});
+
+export const modelMetrics = pgTable("model_metrics", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  modelName: text("model_name").notNull(),
+  accuracy: real("accuracy").notNull(),
+  rmse: real("rmse").notNull(),
+  f1Score: real("f1_score").notNull(),
+  precision: real("precision").notNull(),
+  recall: real("recall").notNull(),
+  lastTraining: timestamp("last_training").notNull(),
+  createdAt: timestamp("created_at").default(sql`now()`),
+});
+
+export const notifications = pgTable("notifications", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  ruleId: text("rule_id").notNull(),
+  type: text("type").notNull(),
+  title: text("title").notNull(),
+  message: text("message").notNull(),
+  priority: text("priority").notNull(),
+  data: jsonb("data"),
+  acknowledged: integer("acknowledged").notNull().default(0),
+  actionRequired: integer("action_required").notNull().default(0),
+  createdAt: timestamp("created_at").default(sql`now()`),
+});
+
+export const externalData = pgTable("external_data", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  sourceId: text("source_id").notNull(),
+  dataType: text("data_type").notNull(),
+  data: jsonb("data"),
+  timestamp: timestamp("timestamp").notNull(),
+  createdAt: timestamp("created_at").default(sql`now()`),
+});
+
+export const advancedPredictions = pgTable("advanced_predictions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  itemName: text("item_name").notNull(),
+  category: text("category").notNull(),
+  modelType: text("model_type").notNull(),
+  predictions: jsonb("predictions"),
+  confidence: jsonb("confidence"),
+  hyperparameters: jsonb("hyperparameters"),
+  seasonalComponents: jsonb("seasonal_components"),
+  anomalies: jsonb("anomalies"),
+  externalFactorsImpact: jsonb("external_factors_impact"),
+  forecastHorizon: integer("forecast_horizon").notNull(),
+  createdAt: timestamp("created_at").default(sql`now()`),
+});
+
+export const insertSalesDataSchema = createInsertSchema(salesData).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertPredictionSchema = createInsertSchema(predictions).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertInventorySchema = createInsertSchema(inventory).omit({
+  id: true,
+  updatedAt: true,
+});
+
+export const insertModelMetricsSchema = createInsertSchema(modelMetrics).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertNotificationSchema = createInsertSchema(notifications).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertExternalDataSchema = createInsertSchema(externalData).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertAdvancedPredictionSchema = createInsertSchema(advancedPredictions).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertUserSchema = createInsertSchema(users).pick({
+  username: true,
+  password: true,
+});
+
+export type InsertUser = z.infer<typeof insertUserSchema>;
+export type User = typeof users.$inferSelect;
+export type SalesData = typeof salesData.$inferSelect;
+export type InsertSalesData = z.infer<typeof insertSalesDataSchema>;
+export type Prediction = typeof predictions.$inferSelect;
+export type InsertPrediction = z.infer<typeof insertPredictionSchema>;
+export type Inventory = typeof inventory.$inferSelect;
+export type InsertInventory = z.infer<typeof insertInventorySchema>;
+export type ModelMetrics = typeof modelMetrics.$inferSelect;
+export type InsertModelMetrics = z.infer<typeof insertModelMetricsSchema>;
+export type NotificationEvent = typeof notifications.$inferSelect;
+export type InsertNotification = z.infer<typeof insertNotificationSchema>;
+export type ExternalData = typeof externalData.$inferSelect;
+export type InsertExternalData = z.infer<typeof insertExternalDataSchema>;
+export type AdvancedPrediction = typeof advancedPredictions.$inferSelect;
+export type InsertAdvancedPrediction = z.infer<typeof insertAdvancedPredictionSchema>;
